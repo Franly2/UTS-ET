@@ -37,6 +37,17 @@ class User {
     return User.empty();
   }
 
+  static bool saveChanges(User updatedUser) {
+    List<User> userData = getUserData().cast<User>();
+    for (int i = 0; i < userData.length; i++) {
+      if (userData[i].email == updatedUser.email) {
+        userData[i] = updatedUser;
+        return true;
+      }
+    }
+    return false;
+  }
+
   get getName => nama;
   get getNrp => nrp;
   get getProgram => program;
