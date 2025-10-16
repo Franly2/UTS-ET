@@ -1,37 +1,31 @@
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 import 'package:project_uts/main.dart';
+import 'package:project_uts/service/login_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:project_uts/class/user.dart';
-import 'package:project_uts/data/userData.dart';
 
 String _user_email = "";
 String _user_password = "";
 
 void doLogin(BuildContext context) async {
-  List<User> userData = getUserData();
+  bool login = loginService(_user_email, _user_password);
 
-  User? foundUser;
-  for (var user in userData) {
-    if (user.login(_user_email, _user_password)) {
-      foundUser = user;
-      break;
-    }
-  }
-
-  if (foundUser == null) {
+  if (!login) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Login gagal! Email atau password salah.')),
     );
     return;
   }
-  
+
   final prefs = await SharedPreferences.getInstance();
-  prefs.setString("_user_email", foundUser.email);
-  print("Login success for: ${foundUser.email}");
-  
-  Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
-  
-  main(); 
+  prefs.setString("_user_email", _user_email);
+
+  Navigator.of(
+    context,
+  ).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+
+  main();
 }
 
 class Login extends StatefulWidget {
@@ -95,7 +89,10 @@ class _LoginState extends State<Login> {
                       onPressed: () {
                         doLogin(context);
                       },
-                      child: const Text('Login', style: TextStyle(fontSize: 20)),
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(fontSize: 20),
+                      ),
                     ),
                   ),
                 ),

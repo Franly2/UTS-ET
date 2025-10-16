@@ -9,7 +9,15 @@ class User {
   String email;
   String password;
 
-  User(this.nama, this.nrp, this.program, this.biografi, this.picture, this.email, this.password,);
+  User(
+    this.nama,
+    this.nrp,
+    this.program,
+    this.biografi,
+    this.picture,
+    this.email,
+    this.password,
+  );
 
   bool login(String inputEmail, String inputPassword) {
     return email == inputEmail && password == inputPassword;

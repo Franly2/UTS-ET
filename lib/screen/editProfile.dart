@@ -1,10 +1,12 @@
 // lib/screen/editProfile.dart
+// ignore_for_file: prefer_const_constructors_in_immutables, library_private_types_in_public_api, use_super_parameters, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:project_uts/class/user.dart';
 import 'package:project_uts/main.dart';
 
 class EditProfile extends StatefulWidget {
-  final User user; 
+  final User user;
   EditProfile({Key? key, required this.user}) : super(key: key);
 
   @override
@@ -50,8 +52,7 @@ class _EditProfileState extends State<EditProfile> {
     );
 
     User.saveChanges(updatedUser);
-    MyAppWrapper.updateActiveUser(); 
-
+    activeUser = updatedUser;
     await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -69,7 +70,7 @@ class _EditProfileState extends State<EditProfile> {
         );
       },
     );
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
   }
 
   @override
