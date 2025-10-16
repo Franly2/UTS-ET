@@ -6,38 +6,32 @@ import 'package:project_uts/data/userData.dart';
 
 String _user_email = "";
 String _user_password = "";
-void doLogin() async {
+
+void doLogin(BuildContext context) async {
   List<User> userData = getUserData();
 
-  bool found = false;
+  User? foundUser;
   for (var user in userData) {
     if (user.login(_user_email, _user_password)) {
-      found = true;
-      _user_email = user.email;
-
+      foundUser = user;
       break;
     }
   }
 
-  if (!found) {
-    print("Login failed");
+  if (foundUser == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Login gagal! Email atau password salah.')),
+    );
     return;
   }
+  
   final prefs = await SharedPreferences.getInstance();
-  prefs.setString("_user_email", _user_email);
-  print("Login success");
-  main();
-}
-
-class MyLogin extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: Login(),
-    );
-  }
+  prefs.setString("_user_email", foundUser.email);
+  print("Login success for: ${foundUser.email}");
+  
+  Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+  
+  main(); 
 }
 
 class Login extends StatefulWidget {
@@ -51,60 +45,63 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: Container(
-        height: 300,
-        margin: EdgeInsets.all(20),
-        padding: EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          border: Border.all(width: 1),
-          color: Colors.white,
-          boxShadow: [BoxShadow(blurRadius: 5)],
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: TextField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Email',
-                  hintText: 'Enter valid email id as abc@gmail.com',
-                ),
-                onChanged: (value) => _user_email = value,
-              ),
+      appBar: AppBar(title: const Text('Login')),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            height: 350,
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              border: Border.all(width: 1),
+              color: Theme.of(context).cardColor,
+              boxShadow: const [BoxShadow(blurRadius: 5)],
             ),
-            Padding(
-              padding: EdgeInsets.all(10),
-              //padding: EdgeInsets.symmetric(horizontal: 15),
-              child: TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Password',
-                  hintText: 'Enter secure password',
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Email',
+                      hintText: 'Enter valid email id as abc@gmail.com',
+                    ),
+                    onChanged: (value) => _user_email = value,
+                  ),
                 ),
-                onChanged: (value) => _user_password = value,
-              ),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: TextField(
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Password',
+                      hintText: 'Enter secure password',
+                    ),
+                    onChanged: (value) => _user_password = value,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Container(
+                    height: 50,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        doLogin(context);
+                      },
+                      child: const Text('Login', style: TextStyle(fontSize: 20)),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: Container(
-                height: 50,
-                width: 300,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    doLogin();
-                  },
-                  child: Text('Login', style: TextStyle(fontSize: 25)),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

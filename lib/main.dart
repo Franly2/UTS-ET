@@ -3,16 +3,18 @@ import 'package:project_uts/class/user.dart';
 import 'package:project_uts/screen/editProfile.dart';
 import 'package:project_uts/screen/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:project_uts/screen/home.dart';
 
-User _active_user = User.empty();
-String _user_email = '';
+final GlobalKey<_MyAppWrapperState> appWrapperKey = GlobalKey<_MyAppWrapperState>(); 
+User activeUser = User.empty();
+String userEmail = '';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  _active_user = await checkUser();
-  if (_active_user.email == '') {
-    runApp(MyLogin());
+  activeUser = await checkUser();
+  if (activeUser.email == '') {
+    runApp(MaterialApp(home: Login())); 
   } else {
     runApp(MyAppWrapper());
   }
@@ -21,26 +23,37 @@ void main() async {
 void doLogout() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.remove("_user_email");
-  _active_user = User.empty();
+  activeUser = User.empty();
   main();
 }
 
 Future<User> checkUser() async {
   final prefs = await SharedPreferences.getInstance();
-  _user_email = prefs.getString("_user_email") ?? '';
-  if (_user_email == '') {
+  userEmail = prefs.getString("_user_email") ?? '';
+  if (userEmail == '') {
     return User.empty();
   }
-  User userData = User.getUserDataByEmail(_user_email);
+  User userData = User.getUserDataByEmail(userEmail); 
   return userData;
 }
 
 class MyAppWrapper extends StatefulWidget {
+  MyAppWrapper() : super(key: appWrapperKey);
+
   @override
   State<MyAppWrapper> createState() => _MyAppWrapperState();
+  
+  static void updateActiveUser() {
+    appWrapperKey.currentState?._updateActiveUser();
+  }
 }
 
 class _MyAppWrapperState extends State<MyAppWrapper> {
+  void _updateActiveUser() async {
+    activeUser = await checkUser(); 
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return MyApp();
@@ -54,80 +67,18 @@ class MyApp extends StatelessWidget {
       title: 'Project UTS',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
       routes: {
-        '/': (context) => MyHomePage(title: 'UTS Emerging Technology'),
+        '/': (context) => Home(title: 'UTS Emerging Technology'), 
         '/login': (context) => Login(),
         '/logout': (context) {
           doLogout();
-          return Login();
+          return const Scaffold(body: Center(child: Text("Logging out...")));
         },
-        '/editProfile': (context) => EditProfile(user: _active_user),
+        '/editProfile': (context) => EditProfile(user: activeUser),
       },
       initialRoute: '/',
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  final String title;
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      drawer: Drawer(
-        elevation: 16.0,
-        child: Column(
-          children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: Text("${_active_user.getName}"),
-              accountEmail: Text("${_active_user.getEmail}"),
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: NetworkImage("https://i.pravatar.cc/150"),
-              ),
-            ),
-            ListTile(
-              title: const Text("Home"),
-              leading: const Icon(Icons.home),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text("Edit Profile"),
-              leading: const Icon(Icons.edit),
-              onTap: () {
-                Navigator.popAndPushNamed(context, "/editProfile");
-              },
-            ),
-            ListTile(
-              title: const Text("Logout"),
-              leading: const Icon(Icons.logout),
-              onTap: () {
-                Navigator.popAndPushNamed(context, "/logout");
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('tes', style: Theme.of(context).textTheme.headlineMedium),
-          ],
-        ),
-      ),
     );
   }
 }
