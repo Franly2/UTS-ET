@@ -1,9 +1,10 @@
+// lib/screen/editProfile.dart
 import 'package:flutter/material.dart';
 import 'package:project_uts/class/user.dart';
 import 'package:project_uts/main.dart';
 
 class EditProfile extends StatefulWidget {
-  final User user;
+  final User user; 
   EditProfile({Key? key, required this.user}) : super(key: key);
 
   @override
@@ -13,7 +14,7 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   late TextEditingController nameController;
   late TextEditingController bioController;
-  String selectedProgram = 'Teknik Informatika';
+  late String selectedProgram;
   List<String> programOptions = [
     'Teknik Informatika',
     'Sistem Informasi',
@@ -27,6 +28,7 @@ class _EditProfileState extends State<EditProfile> {
     super.initState();
     nameController = TextEditingController(text: widget.user.nama);
     bioController = TextEditingController(text: widget.user.biografi);
+    selectedProgram = widget.user.program;
   }
 
   @override
@@ -36,39 +38,63 @@ class _EditProfileState extends State<EditProfile> {
     super.dispose();
   }
 
-  void saveAndClose() {
-    User currentUser = widget.user;
+  void saveAndClose() async {
+    User updatedUser = User(
+      nameController.text,
+      widget.user.nrp,
+      selectedProgram,
+      bioController.text,
+      widget.user.picture,
+      widget.user.email,
+      widget.user.password,
+    );
 
-    currentUser.nama = nameController.text;
-    currentUser.program = selectedProgram;
-    currentUser.biografi = bioController.text;
-    User.saveChanges(currentUser);
-    Navigator.pushReplacementNamed(context, '/');
+    User.saveChanges(updatedUser);
+    MyAppWrapper.updateActiveUser(); 
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Berhasil!'),
+          content: const Text('Data berhasil diperbarui.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Edit Profil')),
+      appBar: AppBar(title: const Text('Edit Profil')),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Nama Lengkap'),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             TextField(
               controller: nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Masukkan nama lengkap',
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text('Program/Lab'),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey),
                 borderRadius: BorderRadius.circular(4),
@@ -76,9 +102,8 @@ class _EditProfileState extends State<EditProfile> {
               child: DropdownButton<String>(
                 isExpanded: true,
                 value: selectedProgram,
-                underline: SizedBox(),
+                underline: const SizedBox(),
                 items: programOptions.map((p) {
-                  // ini untuk loop setiap item di list programOptions sama kayak foreach
                   return DropdownMenuItem<String>(value: p, child: Text(p));
                 }).toList(),
                 onChanged: (val) {
@@ -90,35 +115,33 @@ class _EditProfileState extends State<EditProfile> {
                 },
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text('Biografi'),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             TextField(
               controller: bioController,
               maxLines: 5,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Biografi anda',
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/');
+                      Navigator.pop(context);
                     },
-                    child: Text('Batal'),
+                    child: const Text('Batal'),
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      saveAndClose();
-                    },
-                    child: Text('Simpan Perubahan'),
+                    onPressed: saveAndClose,
+                    child: const Text('Simpan Perubahan'),
                   ),
                 ),
               ],
