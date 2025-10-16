@@ -14,21 +14,24 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final List<User> _allUsers = getUserData();
+  late List<User> _filteredUsers;
 
   @override
   Widget build(BuildContext context) {
-    final User currentUser = activeUser; 
+    final User currentUser = activeUser;
+    _filteredUsers = List.from(_allUsers);
+    _filteredUsers.removeWhere((user) => user.email == activeUser.email);
 
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.title} - ${activeUser.getName}'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary, 
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       drawer: AppDrawer(activeUser: currentUser),
       body: ListView.builder(
-        itemCount: _allUsers.length,
+        itemCount: _filteredUsers.length,
         itemBuilder: (context, index) {
-          final user = _allUsers[index];
+          final user = _filteredUsers[index];
           return Mahasiswa(user: user);
         },
       ),
@@ -63,7 +66,9 @@ class Mahasiswa extends StatelessWidget {
                       Text(
                         user.getName,
                         style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text('NRP: ${user.getNrp}'),
@@ -80,9 +85,7 @@ class Mahasiswa extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => Detail(user: user),
-                    ),
+                    MaterialPageRoute(builder: (context) => Detail(user: user)),
                   );
                 },
                 child: const Text('Lihat Detail Profil'),
@@ -113,7 +116,7 @@ class AppDrawer extends StatelessWidget {
               backgroundImage: NetworkImage(activeUser.getPicture),
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.inversePrimary, 
+              color: Theme.of(context).colorScheme.inversePrimary,
             ),
           ),
           ListTile(
@@ -127,14 +130,14 @@ class AppDrawer extends StatelessWidget {
             title: const Text("Edit Profile"),
             leading: const Icon(Icons.edit),
             onTap: () {
-              Navigator.popAndPushNamed(context, "/editProfile"); 
+              Navigator.popAndPushNamed(context, "/editProfile");
             },
           ),
           ListTile(
             title: const Text("Logout"),
             leading: const Icon(Icons.logout, color: Colors.red),
             onTap: () {
-              Navigator.popAndPushNamed(context, "/logout"); 
+              Navigator.popAndPushNamed(context, "/logout");
             },
           ),
         ],
